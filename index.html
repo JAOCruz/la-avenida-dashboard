@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Avenida — Panel de Administración</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0f; }
+
+    /* Gold gradient */
+    .gold { background: linear-gradient(135deg, #d4a017 0%, #f0c040 50%, #b8860b 100%); }
+    .gold-text { background: linear-gradient(135deg, #f0c040 0%, #d4a017 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gold-border { border: 1px solid rgba(212,160,23,0.4); }
+
+    /* Glass card */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .glass-dark {
+      background: rgba(10,10,20,0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(212,160,23,0.4); border-radius: 2px; }
+
+    /* Tab active */
+    .tab-active {
+      background: linear-gradient(135deg, rgba(212,160,23,0.2), rgba(212,160,23,0.05));
+      border-bottom: 2px solid #d4a017;
+      color: #f0c040;
+    }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #6b7280; }
+    .tab-inactive:hover { color: #9ca3af; }
+
+    /* Login glow */
+    .login-glow { box-shadow: 0 0 60px rgba(212,160,23,0.15), 0 25px 50px rgba(0,0,0,0.5); }
+
+    /* Stat card hover */
+    .stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,160,23,0.12); }
+
+    /* Input focus */
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(212,160,23,0.6);
+      box-shadow: 0 0 0 3px rgba(212,160,23,0.1);
+    }
+
+    /* Status badges */
+    .badge-confirmed { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-pending   { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .badge-cancelled { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .badge-completed { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+
+    /* Chat bubble */
+    .chat-client { background: rgba(255,255,255,0.06); border-radius: 18px 18px 18px 4px; }
+    .chat-bot    { background: linear-gradient(135deg, rgba(212,160,23,0.18), rgba(212,160,23,0.08)); border-radius: 18px 18px 4px 18px; border: 1px solid rgba(212,160,23,0.2); }
+
+    /* Shimmer animation on logo */
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position:  200% center; }
+    }
+    .logo-shimmer {
+      background: linear-gradient(90deg, #d4a017 0%, #f0c040 30%, #fff8dc 50%, #f0c040 70%, #d4a017 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+
+    /* Fade-in */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.4s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+    /* Pulse dot */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+    .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+  </style>
+</head>
+<body class="min-h-screen text-white">
+
+<!-- ─────────────────────────────────────────
+     LOGIN SCREEN
+───────────────────────────────────────── -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center px-4" style="background: radial-gradient(ellipse at 50% 0%, rgba(212,160,23,0.12) 0%, transparent 70%), #0a0a0f;">
+
+  <!-- Background scissors pattern -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none select-none" style="opacity:0.03;">
+    <div class="absolute text-9xl" style="top:5%;left:8%;">✂</div>
+    <div class="absolute text-9xl" style="top:25%;right:10%;">✂</div>
+    <div class="absolute text-9xl" style="bottom:20%;left:15%;">✂</div>
+    <div class="absolute text-9xl" style="bottom:10%;right:20%;">✂</div>
+  </div>
+
+  <div class="w-full max-w-md">
+    <!-- Card -->
+    <div class="glass-dark rounded-2xl p-8 login-glow fade-up">
+
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl mb-4" style="background: linear-gradient(135deg, rgba(212,160,23,0.25), rgba(212,160,23,0.05)); border: 1px solid rgba(212,160,23,0.3);">
+          <span class="text-3xl">✂️</span>
+        </div>
+        <h1 class="text-3xl font-bold logo-shimmer tracking-wide">La Avenida</h1>
+        <p class="text-gray-500 text-sm mt-1 tracking-widest uppercase">Barbershop · Panel Admin</p>
+      </div>
+
+      <!-- Form -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs text-gray-400 uppercase tracking-widest mb-2">Usuario</label>
+          <input id="loginUser" type="text" value="admin" placeholder="admin"
+            class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-600 transition-all"
+            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 uppercase tracking-widest mb-2">Contraseña</label>
+          <input id="loginPass" type="password" value="lavenida2024" placeholder="••••••••"
+            class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-600 transition-all"
+            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);" />
+        </div>
+        <div id="loginError" class="hidden text-red-400 text-sm text-center py-2 rounded-lg" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);">
+          ❌ Credenciales incorrectas
+        </div>
+        <button onclick="doLogin()" id="loginBtn"
+          class="w-full py-3 rounded-xl font-semibold text-black text-sm tracking-wide transition-all hover:opacity-90 active:scale-95 mt-2 gold"
+          style="box-shadow: 0 4px 20px rgba(212,160,23,0.35);">
+          Iniciar Sesión
+        </button>
+      </div>
+
+      <!-- Demo hint -->
+      <p class="text-center text-gray-600 text-xs mt-6">
+        Demo: <span class="text-gray-500">admin</span> / <span class="text-gray-500">lavenida2024</span>
+      </p>
+    </div>
+
+    <p class="text-center text-gray-700 text-xs mt-6">
+      Powered by <span class="text-gray-500">Arcova</span> · Sistema de Gestión para Barberías
+    </p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     DASHBOARD
+───────────────────────────────────────── -->
+<div id="dashboard" class="hidden min-h-screen" style="background: #0a0a0f;">
+
+  <!-- TOP NAV -->
+  <nav class="glass-dark sticky top-0 z-50 px-4 md:px-6 py-3 flex items-center justify-between" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-lg" style="background: linear-gradient(135deg, rgba(212,160,23,0.25), rgba(212,160,23,0.05)); border: 1px solid rgba(212,160,23,0.3);">✂️</div>
+      <div>
+        <span class="font-bold text-sm logo-shimmer">La Avenida</span>
+        <span class="text-gray-600 text-xs ml-2 hidden sm:inline">Barbershop</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Live indicator -->
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full text-xs" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2);">
+        <span class="w-2 h-2 rounded-full bg-green-500 pulse-dot inline-block"></span>
+        <span class="text-green-400">En vivo</span>
+      </div>
+      <!-- Date -->
+      <span class="text-gray-500 text-xs hidden md:block" id="navDate"></span>
+      <!-- Avatar -->
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black gold cursor-pointer" title="Administrador">A</div>
+      <!-- Logout -->
+      <button onclick="doLogout()" class="text-gray-500 hover:text-red-400 transition-colors text-xs px-2 py-1 rounded">Salir</button>
+    </div>
+  </nav>
+
+  <!-- CONTENT WRAPPER -->
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-6">
+
+    <!-- PAGE TITLE -->
+    <div class="mb-6 fade-up">
+      <h2 class="text-2xl font-bold text-white">Panel de Control</h2>
+      <p class="text-gray-500 text-sm mt-1">Bienvenido de vuelta, Admin · <span id="dashDate" class="text-gray-400"></span></p>
+    </div>
+
+    <!-- TABS -->
+    <div class="flex gap-0 mb-6 border-b border-white/10 fade-up delay-1">
+      <button onclick="switchTab('summary')"   id="tab-summary"       class="tab-active   tab px-5 py-3 text-sm font-medium transition-all">📊 Resumen</button>
+      <button onclick="switchTab('reservations')" id="tab-reservations" class="tab-inactive tab px-5 py-3 text-sm font-medium transition-all">📅 Reservaciones</button>
+      <button onclick="switchTab('conversations')" id="tab-conversations" class="tab-inactive tab px-5 py-3 text-sm font-medium transition-all">💬 Conversaciones</button>
+    </div>
+
+    <!-- ── TAB: SUMMARY ── -->
+    <div id="panel-summary" class="tab-panel">
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+        <div class="glass rounded-xl p-4 stat-card fade-up delay-1">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.2);">📅</div>
+            <span class="text-xs px-2 py-1 rounded-full text-indigo-400" style="background: rgba(99,102,241,0.1);">+12%</span>
+          </div>
+          <div class="text-2xl font-bold text-white mb-1">47</div>
+          <div class="text-xs text-gray-500 uppercase tracking-wider">Total Reservas</div>
+          <div class="text-xs text-gray-600 mt-1">Este mes</div>
+        </div>
+
+        <div class="glass rounded-xl p-4 stat-card fade-up delay-2">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.2);">☀️</div>
+            <span class="text-xs px-2 py-1 rounded-full text-green-400" style="background: rgba(16,185,129,0.1);">+3 hoy</span>
+          </div>
+          <div class="text-2xl font-bold text-white mb-1">8</div>
+          <div class="text-xs text-gray-500 uppercase tracking-wider">Citas Hoy</div>
+          <div class="text-xs text-gray-600 mt-1">Próxima: 2:30 PM</div>
+        </div>
+
+        <div class="glass rounded-xl p-4 stat-card fade-up delay-3">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background: rgba(212,160,23,0.15); border: 1px solid rgba(212,160,23,0.2);">💰</div>
+            <span class="text-xs px-2 py-1 rounded-full" style="color:#f0c040; background: rgba(212,160,23,0.1);">+18%</span>
+          </div>
+          <div class="text-2xl font-bold text-white mb-1">RD$24,800</div>
+          <div class="text-xs text-gray-500 uppercase tracking-wider">Ingresos Est.</div>
+          <div class="text-xs text-gray-600 mt-1">Este mes</div>
+        </div>
+
+        <div class="glass rounded-xl p-4 stat-card fade-up delay-4">
+          <div class="flex items-start justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl" style="background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.2);">🤖</div>
+            <span class="text-xs px-2 py-1 rounded-full text-pink-400" style="background: rgba(236,72,153,0.1);">En vivo</span>
+          </div>
+          <div class="text-2xl font-bold text-white mb-1">3</div>
+          <div class="text-xs text-gray-500 uppercase tracking-wider">Chats Activos</div>
+          <div class="text-xs text-gray-600 mt-1">Bot respondiendo</div>
+        </div>
+      </div>
+
+      <!-- Bottom row: Schedule + Barbers -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- Today's schedule -->
+        <div class="glass rounded-xl p-5 fade-up delay-2">
+          <h3 class="font-semibold text-white mb-4 flex items-center gap-2">
+            <span class="w-6 h-6 rounded flex items-center justify-center text-xs" style="background: rgba(16,185,129,0.2);">☀</span>
+            Agenda de Hoy
+          </h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15);">
+              <div class="text-xs text-green-400 font-mono w-14">10:00 AM</div>
+              <div class="flex-1">
+                <div class="text-sm text-white font-medium">Carlos Martínez</div>
+                <div class="text-xs text-gray-500">Corte + Barba · Miguel A.</div>
+              </div>
+              <span class="badge-completed text-xs px-2 py-1 rounded-full">Completado</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15);">
+              <div class="text-xs text-green-400 font-mono w-14">11:30 AM</div>
+              <div class="flex-1">
+                <div class="text-sm text-white font-medium">Luis Fernández</div>
+                <div class="text-xs text-gray-500">Fade Bajo · Ramón J.</div>
+              </div>
+              <span class="badge-completed text-xs px-2 py-1 rounded-full">Completado</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background: rgba(212,160,23,0.06); border: 1px solid rgba(212,160,23,0.25);">
+              <div class="text-xs font-mono w-14" style="color:#f0c040;">2:30 PM</div>
+              <div class="flex-1">
+                <div class="text-sm text-white font-medium">Pedro Álvarez</div>
+                <div class="text-xs text-gray-500">Corte Clásico · Ángel S.</div>
+              </div>
+              <span class="badge-confirmed text-xs px-2 py-1 rounded-full">Próximo</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);">
+              <div class="text-xs text-gray-500 font-mono w-14">4:00 PM</div>
+              <div class="flex-1">
+                <div class="text-sm text-gray-300 font-medium">Juan De los Santos</div>
+                <div class="text-xs text-gray-600">Diseño + Arreglo · Miguel A.</div>
+              </div>
+              <span class="badge-confirmed text-xs px-2 py-1 rounded-full">Confirmado</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);">
+              <div class="text-xs text-gray-500 font-mono w-14">5:30 PM</div>
+              <div class="flex-1">
+                <div class="text-sm text-gray-300 font-medium">Rafael Sánchez</div>
+                <div class="text-xs text-gray-600">Corte + Barba · Ramón J.</div>
+              </div>
+              <span class="badge-pending text-xs px-2 py-1 rounded-full">Pendiente</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barber performance -->
+        <div class="glass rounded-xl p-5 fade-up delay-3">
+          <h3 class="font-semibold text-white mb-4 flex items-center gap-2">
+            <span class="w-6 h-6 rounded flex items-center justify-center text-xs" style="background: rgba(212,160,23,0.2);">✂</span>
+            Rendimiento — Barberos
+          </h3>
+          <div class="space-y-4">
+
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-300 flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-xs font-bold text-white">MA</span>
+                  Miguel Ángel Reyes
+                </span>
+                <span class="text-gray-400 text-xs">19 citas</span>
+              </div>
+              <div class="w-full h-2 rounded-full" style="background: rgba(255,255,255,0.08);">
+                <div class="h-2 rounded-full gold" style="width: 78%;"></div>
+              </div>
+              <div class="text-xs text-gray-600 mt-1">RD$10,800 · ⭐ 4.9</div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-300 flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">RJ</span>
+                  Ramón José Pichardo
+                </span>
+                <span class="text-gray-400 text-xs">16 citas</span>
+              </div>
+              <div class="w-full h-2 rounded-full" style="background: rgba(255,255,255,0.08);">
+                <div class="h-2 rounded-full" style="width: 65%; background: linear-gradient(90deg, #818cf8, #6366f1);"></div>
+              </div>
+              <div class="text-xs text-gray-600 mt-1">RD$8,500 · ⭐ 4.8</div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-300 flex items-center gap-2">
+                  <span class="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-xs font-bold text-white">AS</span>
+                  Ángel Suárez Batista
+                </span>
+                <span class="text-gray-400 text-xs">12 citas</span>
+              </div>
+              <div class="w-full h-2 rounded-full" style="background: rgba(255,255,255,0.08);">
+                <div class="h-2 rounded-full" style="width: 49%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+              </div>
+              <div class="text-xs text-gray-600 mt-1">RD$5,500 · ⭐ 4.7</div>
+            </div>
+
+          </div>
+
+          <!-- Quick insight -->
+          <div class="mt-5 p-3 rounded-lg" style="background: linear-gradient(135deg, rgba(212,160,23,0.1), rgba(212,160,23,0.03)); border: 1px solid rgba(212,160,23,0.2);">
+            <p class="text-xs" style="color: #d4a017;">💡 <strong>Insight del bot:</strong> El 68% de las reservas se hacen entre 7PM–11PM. El bot atiende sin costo humano.</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /panel-summary -->
+
+    <!-- ── TAB: RESERVATIONS ── -->
+    <div id="panel-reservations" class="tab-panel hidden">
+
+      <!-- Top bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5 fade-up">
+        <div class="flex-1">
+          <input type="text" id="searchInput" oninput="filterReservations()" placeholder="🔍  Buscar cliente, barbero, servicio…"
+            class="input-field w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 transition-all"
+            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);" />
+        </div>
+        <div class="flex gap-2">
+          <select id="statusFilter" onchange="filterReservations()"
+            class="input-field px-3 py-2.5 rounded-xl text-sm text-gray-300 transition-all"
+            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+            <option value="">Todos los estados</option>
+            <option value="Confirmado">Confirmado</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Completado">Completado</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+          <button class="px-4 py-2.5 rounded-xl text-xs font-medium text-black gold hover:opacity-90 transition-all whitespace-nowrap"
+            style="box-shadow: 0 2px 10px rgba(212,160,23,0.25);">
+            + Nueva
+          </button>
+        </div>
+      </div>
+
+      <!-- Table wrapper -->
+      <div class="glass rounded-xl overflow-hidden fade-up delay-1">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.07);">
+                <th class="text-left px-4 py-3 text-gray-400 text-xs uppercase tracking-wider font-medium">Cliente</th>
+                <th class="text-left px-4 py-3 text-gray-400 text-xs uppercase tracking-wider font-medium hidden sm:table-cell">Fecha</th>
+                <th class="text-left px-4 py-3 text-gray-400 text-xs uppercase tracking-wider font-medium">Hora</th>
+                <th class="text-left px-4 py-3 text-gray-400 text-xs uppercase tracking-wider font-medium hidden md:table-cell">Barbero</th>
+                <th class="text-left px-4 py-3 text-gray-400 text-xs uppercase tracking-wider font-medium hidden lg:table-cell">Servicio</th>
+                <th class="text-left px-4 py-3 text-gray-400 text-xs uppercase tracking-wider font-medium">Precio</th>
+                <th class="text-left px-4 py-3 text-gray-400 text-xs uppercase tracking-wider font-medium">Estado</th>
+                <th class="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody id="reservationsBody">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-4 py-3 flex items-center justify-between" style="border-top: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);">
+          <span class="text-xs text-gray-500" id="resCount">Mostrando 10 reservaciones</span>
+          <div class="flex gap-1">
+            <button class="px-3 py-1 rounded text-xs text-gray-400 hover:text-white transition-colors" style="background: rgba(255,255,255,0.05);">← Anterior</button>
+            <button class="px-3 py-1 rounded text-xs text-black gold">1</button>
+            <button class="px-3 py-1 rounded text-xs text-gray-400 hover:text-white transition-colors" style="background: rgba(255,255,255,0.05);">2</button>
+            <button class="px-3 py-1 rounded text-xs text-gray-400 hover:text-white transition-colors" style="background: rgba(255,255,255,0.05);">Siguiente →</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /panel-reservations -->
+
+    <!-- ── TAB: CONVERSATIONS ── -->
+    <div id="panel-conversations" class="tab-panel hidden">
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 fade-up">
+
+        <!-- Conversation list -->
+        <div class="glass rounded-xl overflow-hidden">
+          <div class="px-4 py-3" style="border-bottom: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03);">
+            <h3 class="text-sm font-semibold text-white">Conversaciones</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Gestionadas por el bot IA</p>
+          </div>
+          <div id="convList" class="divide-y divide-white/5">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <!-- Chat window -->
+        <div class="lg:col-span-2 glass rounded-xl overflow-hidden flex flex-col" style="height: 600px;">
+          <!-- Chat header -->
+          <div class="px-4 py-3 flex items-center gap-3" style="border-bottom: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03);">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-black gold" id="chatAvatar">C</div>
+            <div class="flex-1">
+              <div class="text-sm font-semibold text-white" id="chatName">Carlos Martínez</div>
+              <div class="text-xs text-gray-500 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 pulse-dot inline-block"></span>
+                <span id="chatSub">WhatsApp · Bot activo</span>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="text-xs px-3 py-1.5 rounded-lg text-gray-400 hover:text-white transition-colors" style="background: rgba(255,255,255,0.06);">Ver perfil</button>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMessages">
+            <!-- Filled by JS -->
+          </div>
+
+          <!-- Compose -->
+          <div class="px-4 py-3" style="border-top: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.02);">
+            <div class="flex gap-2">
+              <input type="text" placeholder="Enviar mensaje manual…"
+                class="input-field flex-1 px-3 py-2 rounded-xl text-sm text-white placeholder-gray-600 transition-all"
+                style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);" />
+              <button class="px-4 py-2 rounded-xl text-xs font-medium text-black gold hover:opacity-90 transition-all">Enviar</button>
+            </div>
+            <p class="text-xs text-gray-600 mt-2 text-center">⚡ El bot responde automáticamente 24/7 — intervención manual opcional</p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /panel-conversations -->
+
+  </div><!-- /content wrapper -->
+
+  <!-- Footer -->
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 mt-4">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-2 py-4" style="border-top: 1px solid rgba(255,255,255,0.05);">
+      <p class="text-gray-600 text-xs">© 2025 La Avenida Barbershop — Panel Demo</p>
+      <p class="text-gray-700 text-xs">Desarrollado por <span class="text-gray-500">Arcova</span> · <span style="color: rgba(212,160,23,0.5);">arcova.app</span></p>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+// ══════════════════════════════════════════
+//   DATA
+// ══════════════════════════════════════════
+const RESERVATIONS = [
+  { id: '#R-001', name: 'Carlos Martínez',      date: '2025-04-09', time: '10:00 AM', barber: 'Miguel Ángel Reyes',   service: 'Corte + Barba',          price: 'RD$800',  status: 'Completado' },
+  { id: '#R-002', name: 'Luis Fernández',        date: '2025-04-09', time: '11:30 AM', barber: 'Ramón José Pichardo', service: 'Fade Bajo',               price: 'RD$600',  status: 'Completado' },
+  { id: '#R-003', name: 'Pedro Álvarez',         date: '2025-04-09', time: '2:30 PM',  barber: 'Ángel Suárez',        service: 'Corte Clásico',           price: 'RD$500',  status: 'Confirmado' },
+  { id: '#R-004', name: 'Juan De los Santos',    date: '2025-04-09', time: '4:00 PM',  barber: 'Miguel Ángel Reyes',  service: 'Diseño + Arreglo',        price: 'RD$700',  status: 'Confirmado' },
+  { id: '#R-005', name: 'Rafael Sánchez',        date: '2025-04-09', time: '5:30 PM',  barber: 'Ramón José Pichardo', service: 'Corte + Barba',           price: 'RD$800',  status: 'Pendiente'  },
+  { id: '#R-006', name: 'Ernesto Castillo',      date: '2025-04-08', time: '9:00 AM',  barber: 'Ángel Suárez',        service: 'Fade Alto',               price: 'RD$650',  status: 'Completado' },
+  { id: '#R-007', name: 'José Antonio Peña',    date: '2025-04-08', time: '12:00 PM', barber: 'Miguel Ángel Reyes',  service: 'Corte Clásico',           price: 'RD$500',  status: 'Completado' },
+  { id: '#R-008', name: 'Félix Rodríguez',      date: '2025-04-08', time: '3:00 PM',  barber: 'Ramón José Pichardo', service: 'Corte + Cejas',           price: 'RD$600',  status: 'Cancelado'  },
+  { id: '#R-009', name: 'Christian Jiménez',    date: '2025-04-10', time: '10:30 AM', barber: 'Miguel Ángel Reyes',  service: 'Fade Medio + Barba',      price: 'RD$900',  status: 'Confirmado' },
+  { id: '#R-010', name: 'Néstor Guerrero',      date: '2025-04-10', time: '1:00 PM',  barber: 'Ángel Suárez',        service: 'Corte Escolar',           price: 'RD$400',  status: 'Pendiente'  },
+];
+
+const CONVERSATIONS = [
+  {
+    id: 1,
+    name: 'Carlos Martínez',
+    phone: '+1 (829) 555-0121',
+    channel: 'WhatsApp',
+    time: 'Hace 12 min',
+    preview: 'Perfecto, me anoto para mañana',
+    unread: 0,
+    messages: [
+      { from: 'client', text: 'Buenas! Tienen disponibilidad para mañana en la mañana?', time: '9:02 AM' },
+      { from: 'bot',    text: '¡Hola Carlos! 👋 Sí, tenemos disponibilidad mañana. ¿A qué hora te vendría bien? Tenemos espacios a las 9:00 AM, 10:30 AM y 11:00 AM con Miguel Ángel o Ángel Suárez.', time: '9:02 AM' },
+      { from: 'client', text: 'Las 10:30 está bien. Con Miguel si puede ser', time: '9:04 AM' },
+      { from: 'bot',    text: '✅ ¡Listo! Te reservé para *mañana Jueves 10 de abril a las 10:30 AM* con Miguel Ángel Reyes.\n\n📍 La Avenida Barbershop\n✂️ Servicio: Corte clásico (puedes cambiar al llegar)\n💰 Precio: desde RD$500\n\nTe enviaré un recordatorio 1 hora antes. ¿Hay algo más en que pueda ayudarte?', time: '9:04 AM' },
+      { from: 'client', text: 'Perfecto, me anoto para mañana 👌', time: '9:06 AM' },
+      { from: 'bot',    text: '¡Hasta mañana! 💈 Cualquier cambio de último momento, escríbenos aquí.', time: '9:06 AM' },
+    ]
+  },
+  {
+    id: 2,
+    name: 'Michael Thompson',
+    phone: '+1 (809) 555-0198',
+    channel: 'WhatsApp',
+    time: 'Hace 38 min',
+    preview: 'What time do you close?',
+    unread: 1,
+    messages: [
+      { from: 'client', text: 'Hi! What time do you close today?', time: '8:31 AM' },
+      { from: 'bot',    text: "Hi Michael! 👋 Today we're open until *8:00 PM*. Would you like to book an appointment? We still have slots available this afternoon at 3:30 PM and 5:00 PM.", time: '8:31 AM' },
+      { from: 'client', text: 'Is it $10 for a haircut?', time: '8:33 AM' },
+      { from: 'bot',    text: 'Our prices start at *RD$500* (about $8 USD) for a classic cut. A fade or cut + beard trim is RD$700–900. All cuts include a hot towel finish! 🔥', time: '8:33 AM' },
+      { from: 'client', text: 'Nice. Can I book for 5pm?', time: '8:35 AM' },
+      { from: 'bot',    text: "Perfect! ✅ You're booked for *today at 5:00 PM* with Ángel Suárez. See you then! 💈\n\nAddress: Av. 27 de Febrero, La Avenida Barbershop", time: '8:35 AM' },
+      { from: 'client', text: 'What time do you close?', time: '9:03 AM' },
+    ]
+  },
+  {
+    id: 3,
+    name: 'Rafael Sánchez',
+    phone: '+1 (809) 555-0144',
+    channel: 'WhatsApp',
+    time: 'Hace 1 hora',
+    preview: 'Gracias, hasta las 5:30',
+    unread: 0,
+    messages: [
+      { from: 'client', text: 'Hola, puedo cambiar mi cita de las 5pm a las 5:30?', time: '8:15 AM' },
+      { from: 'bot',    text: '¡Hola Rafael! Claro que sí. Permíteme un momento para revisar disponibilidad con Ramón...', time: '8:15 AM' },
+      { from: 'bot',    text: '✅ Listo, te cambié tu cita de hoy a las *5:30 PM* con Ramón José Pichardo. ¡Sin problema! 👍', time: '8:16 AM' },
+      { from: 'client', text: 'Gracias, hasta las 5:30 🙏', time: '8:17 AM' },
+    ]
+  },
+  {
+    id: 4,
+    name: 'Ernesto Castillo',
+    phone: '+1 (829) 555-0109',
+    channel: 'WhatsApp',
+    time: 'Ayer',
+    preview: 'Cuánto cuesta el fade?',
+    unread: 0,
+    messages: [
+      { from: 'client', text: 'Cuánto cuesta el fade?', time: 'Ayer 7:45 PM' },
+      { from: 'bot',    text: '¡Hola! 💈 El fade (bajo, medio o alto) tiene un precio de *RD$600–650*. Si lo combinas con arreglo de barba sería RD$850. ¿Te agendamos?', time: 'Ayer 7:45 PM' },
+      { from: 'client', text: 'Sí, para mañana a las 9', time: 'Ayer 7:47 PM' },
+      { from: 'bot',    text: '¡Perfecto! ✅ Reservado para *mañana a las 9:00 AM* con Ángel Suárez. Te esperamos 💈', time: 'Ayer 7:47 PM' },
+    ]
+  }
+];
+
+// ══════════════════════════════════════════
+//   AUTH
+// ══════════════════════════════════════════
+function doLogin() {
+  const user = document.getElementById('loginUser').value;
+  const pass = document.getElementById('loginPass').value;
+  const err  = document.getElementById('loginError');
+  const btn  = document.getElementById('loginBtn');
+
+  btn.textContent = 'Verificando…';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    if (user === 'admin' && pass === 'lavenida2024') {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      initDashboard();
+    } else {
+      err.classList.remove('hidden');
+      btn.textContent = 'Iniciar Sesión';
+      btn.disabled = false;
+      setTimeout(() => err.classList.add('hidden'), 3000);
+    }
+  }, 600);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginScreen').classList.contains('hidden')) doLogin();
+});
+
+function doLogout() {
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════
+//   INIT
+// ══════════════════════════════════════════
+function initDashboard() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const dateStr = now.toLocaleDateString('es-DO', opts);
+  document.getElementById('navDate').textContent = dateStr;
+  document.getElementById('dashDate').textContent = dateStr;
+
+  renderReservations(RESERVATIONS);
+  renderConversationList(0);
+  renderChat(0);
+}
+
+// ══════════════════════════════════════════
+//   TABS
+// ══════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(t => { t.classList.remove('tab-active'); t.classList.add('tab-inactive'); });
+  document.getElementById('panel-' + name).classList.remove('hidden');
+  document.getElementById('tab-' + name).classList.add('tab-active');
+  document.getElementById('tab-' + name).classList.remove('tab-inactive');
+}
+
+// ══════════════════════════════════════════
+//   RESERVATIONS
+// ══════════════════════════════════════════
+function badgeClass(status) {
+  return { 'Confirmado': 'badge-confirmed', 'Pendiente': 'badge-pending', 'Cancelado': 'badge-cancelled', 'Completado': 'badge-completed' }[status] || 'badge-pending';
+}
+
+function renderReservations(data) {
+  const tbody = document.getElementById('reservationsBody');
+  tbody.innerHTML = data.map(r => `
+    <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-black gold hidden sm:flex">${r.name[0]}</div>
+          <div>
+            <div class="text-sm text-white font-medium">${r.name}</div>
+            <div class="text-xs text-gray-600">${r.id}</div>
+          </div>
+        </div>
+      </td>
+      <td class="px-4 py-3 text-gray-400 text-sm hidden sm:table-cell">${formatDate(r.date)}</td>
+      <td class="px-4 py-3 text-gray-300 text-sm font-mono">${r.time}</td>
+      <td class="px-4 py-3 text-gray-400 text-sm hidden md:table-cell">${r.barber.split(' ').slice(0,2).join(' ')}</td>
+      <td class="px-4 py-3 text-gray-400 text-sm hidden lg:table-cell">${r.service}</td>
+      <td class="px-4 py-3 text-sm font-medium" style="color: #f0c040;">${r.price}</td>
+      <td class="px-4 py-3"><span class="${badgeClass(r.status)} text-xs px-2 py-1 rounded-full">${r.status}</span></td>
+      <td class="px-4 py-3"><button class="text-gray-600 hover:text-gray-300 text-xs transition-colors">···</button></td>
+    </tr>
+  `).join('');
+  document.getElementById('resCount').textContent = `Mostrando ${data.length} reservaciones`;
+}
+
+function formatDate(d) {
+  const [y,m,day] = d.split('-');
+  const months = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return `${parseInt(day)} ${months[parseInt(m)]} ${y}`;
+}
+
+function filterReservations() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const s = document.getElementById('statusFilter').value;
+  const filtered = RESERVATIONS.filter(r => {
+    const match = !q || r.name.toLowerCase().includes(q) || r.barber.toLowerCase().includes(q) || r.service.toLowerCase().includes(q);
+    const stat  = !s || r.status === s;
+    return match && stat;
+  });
+  renderReservations(filtered);
+}
+
+// ══════════════════════════════════════════
+//   CONVERSATIONS
+// ══════════════════════════════════════════
+let activeConv = 0;
+
+function renderConversationList(activeIdx) {
+  const container = document.getElementById('convList');
+  container.innerHTML = CONVERSATIONS.map((c, i) => `
+    <div onclick="selectConv(${i})"
+      class="px-4 py-3 cursor-pointer transition-all hover:bg-white/5 ${i === activeIdx ? 'bg-white/[0.06]' : ''}"
+      id="conv-item-${i}">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-black gold flex-shrink-0 relative">
+          ${c.name[0]}
+          ${c.unread ? `<span class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">${c.unread}</span>` : ''}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-white truncate">${c.name}</span>
+            <span class="text-xs text-gray-600 flex-shrink-0 ml-2">${c.time}</span>
+          </div>
+          <div class="text-xs text-gray-500 truncate mt-0.5">${c.preview}</div>
+          <div class="text-xs text-gray-700 mt-0.5">${c.channel} · <span class="text-green-700">Bot activo</span></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectConv(i) {
+  activeConv = i;
+  renderConversationList(i);
+  renderChat(i);
+}
+
+function renderChat(i) {
+  const c = CONVERSATIONS[i];
+  document.getElementById('chatAvatar').textContent = c.name[0];
+  document.getElementById('chatName').textContent = c.name;
+  document.getElementById('chatSub').textContent = `${c.channel} · ${c.phone}`;
+
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = c.messages.map(m => `
+    <div class="flex ${m.from === 'client' ? 'justify-start' : 'justify-end'}">
+      <div class="max-w-xs lg:max-w-sm">
+        ${m.from === 'bot' ? '<div class="flex items-center gap-1 mb-1 justify-end"><span class="text-xs text-gray-600">🤖 Bot</span></div>' : ''}
+        <div class="${m.from === 'client' ? 'chat-client' : 'chat-bot'} px-4 py-2.5 text-sm text-gray-200 whitespace-pre-wrap">${m.text}</div>
+        <div class="text-xs text-gray-700 mt-1 ${m.from === 'client' ? 'text-left' : 'text-right'}">${m.time}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Scroll to bottom
+  container.scrollTop = container.scrollHeight;
+}
+</script>
+</body>
+</html>
